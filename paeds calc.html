@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Paediatric Dose Calculator</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#00695c">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+<style>
+    :root {
+        --header-teal: #00695c;
+        --header-grey: #546e7a;
+        --bg-light-green: #f1f8e9;
+        --highlight-yellow: #fff9c4;
+        --input-orange: #ffe0b2;
+        --input-border: #ef6c00;
+    }
+
+    /* LOCK THE ENTIRE SCREEN */
+    html, body {
+        height: 100%;
+        margin: 0; padding: 0;
+        overflow: hidden; /* This stops the floating and bouncing */
+        font-family: 'Roboto', sans-serif;
+        background-color: #fafafa;
+    }
+
+    /* THE TOP PANEL - FIXED AND LOCKED */
+    .top-panel {
+        height: 160px; /* Exact height for your Logo, Title, and Search */
+        width: 100%;
+        background-color: #fafafa;
+        border-bottom: 2px solid #ddd;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1000;
+        padding: 5px 0;
+    }
+    
+    .page-logo-link {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        z-index: 1001; /* Keeps it above the panel */
+        transition: transform 0.2s ease;
+    }
+
+    .page-logo-link:hover {
+        transform: scale(1.05); /* Slight grow when hovered */
+    }
+
+    .page-logo {
+        width: 160px;
+        height: auto;
+        cursor: pointer;
+    }
+
+    h1 { color: var(--header-teal); margin: 0 0 5px 0; font-size: 30px; text-transform: uppercase; text-align: center; width: 70%; }
+    .input-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    label { font-weight: bold; color: var(--header-teal); font-size: 16px; }
+    input[type="number"] { width: 100px; padding: 8px; font-size: 18px; font-weight: bold; text-align: center; background-color: var(--input-orange); border: 3px solid var(--input-border); border-radius: 8px; outline: none; }
+    .search-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 5px; }
+    #searchInput { width: 100%; padding: 10px 40px 10px 15px; border: 1px solid var(--header-teal); border-radius: 20px; outline: none; box-sizing: border-box; }
+    .btn-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--header-teal); font-size: 20px; font-weight: bold; cursor: pointer; }
+
+    /* THE SCROLLING TABLE SECTION - NO FLOATING HEADERS */
+    .table-viewport {
+        height: calc(100vh - 160px); /* Fill the rest of the screen */
+        overflow: auto; /* Scroll happens only here */
+        width: 100%;
+    }
+
+    table { 
+        width: 100%; border-collapse: separate; border-spacing: 0; 
+        background-color: var(--bg-light-green);
+        table-layout: fixed; min-width: 1000px; 
+    }
+
+    /* THE GREY HEADER - LOCKED TO THE TOP OF THE SCROLL BOX */
+    thead th {
+        position: sticky;
+        top: 0; /* Sticks only to the top of its own scroll box */
+        z-index: 900;
+        background-color: var(--header-grey);
+        color: white !important;
+        text-transform: uppercase;
+        font-weight: bold !important;
+        padding: 12px 10px;
+        border: 1px solid #c5e1a5;
+        font-size: 14px !important;
+    }
+
+    thead th.header-calc {
+        background-color: #ffe0b2 !important;
+        color: black !important; /* Bright orange/red for visibility */
+    }
+
+    .col-ref-header {
+        font-size: 14px !important;
+        font-weight: bold;
+        color: white !important;
+    }
+
+    /* PERFECT ALIGNMENT FOR COLUMNS */
+    td { padding: 12px 10px; border: 1px solid #c5e1a5; vertical-align: top; word-wrap: break-word; }
+    .col-item { width: 19%; font-size: 15px; font-weight: bold;text-align: left; vertical-align: middle !important; }
+    .col-range { width: 30%; font-size: 16px; font-weight: bold !important; }
+    .col-calc { width: 8%; text-align: center !important; font-weight: bold; background-color: var(--highlight-yellow) !important; color: #d84315; }
+    .col-freq { width: 8%; font-size: 16px; font-weight: bold; text-align: center !important; }
+    .col-remarks { width: 30%; font-size: 15px; font-weight: bold !important; 
+    text-align: justify; /* This justifies the text */
+    hyphens: auto; text-justify: inter-word;      /* Helps with long words like 'phenoxymethylpenicillin' */
+    line-height: 1.4;    /* Improves readability for justified text */} 
+    .col-ref { width: 5%; font-size: 12px; color: #555; }
+
+    .max-hit {
+    color: #ff3d00 !important; /* Bright Red */
+    font-weight: bold;
+    text-align: left;
+    vertical-align: middle;
+    }
+    .max-dots-container {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.0;
+        text-align: left;
+    }
+
+    .max-dots {
+        display: block;
+        font-size: 16px;
+        line-height: 0.1;
+        margin-top: -6px;
+        letter-spacing: 0.2px;
+        color: #d84315;
+        padding-left: 2px;
+    }
+
+    /* CENTERED DISCLAIMER */
+    .footer-disclaimer { text-align: center; font-size: 12px; color: #666; padding: 40px 20px; border-top: 1px solid #ddd; }
+
+    .section-header { background-color: var(--header-teal); color: white; font-weight: bold; padding: 10px 15px; text-align: left; font-size: 14px; }
+    .disease-tag { display: block; font-weight: bold; color: #004d40; background-color: rgba(0, 105, 92, 0.1); padding: 4px; border-radius: 4px; margin-bottom: 6px; border-left: 3px solid #004d40; }
+
+    #backToTop {
+        display: none; 
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 2000; /* Over everything */
+        background-color: var(--header-teal);
+        color: white;
+        border: 4px solid white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    #backToTop:hover {
+        background-color: #004d40;
+    }
+
+    /* MOBILE OPTIMIZATION */
+    @media screen and (max-width: 600px) {
+        .top-panel {
+            height: auto; /* Allow the panel to grow to fit its content */ 
+            padding-bottom: 10px;
+        }
+
+        .page-logo-link {
+            position: relative; 
+            top: 0;
+            right: 0;
+            display: block;
+            text-align: center;
+            margin-bottom: 2px; /* Pulls title closer to logo */
+        }
+
+        .page-logo {
+            width: 80px; /* Small logo to save screen space */
+            height: auto;
+        }
+
+        h1 {
+            font-size: 18px; /* Slightly smaller font for better fit */
+            width: 95%;      
+            margin: 2px 0 8px 0; 
+            line-height: 1.1;
+        }
+
+        .input-wrapper {
+            margin-bottom: 8px;
+        }
+
+        .table-viewport {
+            flex: 1; 
+            height: auto !important; /* Overrides your calc() which is causing the overlap */
+            overflow: auto;
+        }
+
+        table { 
+            min-width: 800px !important; /* Force the table to stay wide so text doesn't wrap/squeeze */
+            width: auto; 
+        }
+    
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevents double scrollbars */
+        }
+
+        #searchInput {
+            width: 90%; 
+            padding: 8px 15px; /* Slightly slimmer search bar */
+        }
+
+        td { 
+            padding: 8px 5px; /* Tighter cells */
+            font-size: 13px;  /* Smaller base font */
+        }
+
+        .col-item { 
+            font-size: 11px; 
+            width: 100px; /* Specific width for drug names */
+        }
+
+        .col-range { 
+            width: 120px; 
+            font-size: 11px;
+        }
+
+        /* 2. Make calculation columns smaller since numbers are whole now */
+        .col-calc { 
+            width: 60px; 
+            font-size: 11px; 
+        }
+
+        .col-freq { 
+            width: 70px; 
+            font-size: 11px; 
+        }
+
+        .col-remarks { 
+            width: 200px; 
+            font-size: 10px; /* Smallest text for long remarks */
+        }
+        .col-ref { 
+            width: 40px; 
+            font-size: 8px; 
+            color: #777; 
+        }
+        /* 3. Reduce min-width of the table so it feels less "stretched" */
+        table { 
+            min-width: 850px; 
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+    <div class="top-panel">
+        <a href="https://sites.google.com/moh.gov.my/irx/home?pli=1" target="_top" class="page-logo-link">
+            <img src="logo.png" class="page-logo" alt="Logo">
+        </a>
+
+        <h1>PAEDIATRIC DOSE CALCULATOR</h1>
+        <div class="input-wrapper">
+            <label for="weightInput">PATIENT WEIGHT (KG):</label>
+            <input type="number" id="weightInput" step="0.1" placeholder="0">
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 Search drug or diagnosis...">
+            <button class="btn-clear" onclick="clearSearch()">×</button>
+        </div>
+    </div>
+
+    <div class="table-viewport">
+        <table id="doseTable">
+            <thead>
+                <tr>
+                    <th class="col-item">DRUG ITEM</th>
+                    <th class="col-range">DIAGNOSIS & RANGE</th>
+                    <th class="col-calc header-calc">DOSE (MG)</th> 
+                    <th class="col-calc header-calc">VOL (ML)</th>
+                    <th class="col-freq">FREQ</th>
+                    <th class="col-remarks">REMARKS</th>
+                    <th class="col-ref col-ref-header">REF</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        
+        <div class="footer-disclaimer">
+            Disclaimer: This calculator is intended for reference purposes only.
+            <div class="timestamp">Clinical data last verified: 30 December 2025</div>
+        </div>
+        <button id="backToTop" onclick="scrollToTop()">↑</button>
+    </div>
+
+<script>
+    const weightInput = document.getElementById('weightInput');
+    const tableBody = document.getElementById('tableBody');
+
+    function clearSearch() {
+        document.getElementById("searchInput").value = "";
+        renderTable(); 
+    }
+
+    function filterTable() {
+        renderTable(); // We will now handle the filtering inside the main function
+    }
+
+    const data = [
+        { section: "1. COMMON ITEMS" },
+        {
+            name: "BROMHEXINE 4mg/5mL SYRUP",
+            range: "< 2 years: 1mg TDS\n2 - 5 years: 2mg TDS\n6 - 12 years: 4mg TDS",
+            recDose: "BY AGE", 
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "1mg (1.25mL)\n2mg (2.5mL)\n4mg (5mL)",
+            freq: "TDS",
+            remarks: "Discuss with FMS for use in children <2 years old.\n4mg: May use bromhexine 8mg tablet half tab.",
+            ref: "FUKKM"
+        },
+        {
+            name: "CHLORPHENIRAMINE 2mg/mL SYRUP",
+            range: "2 - 5 years: 1mg TDS (max 6mg/day)\n6 - 12 years: 2mg TDS (max 12mg/day)",
+            recDose: "BY AGE",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "1mg (2.5mL)\n2mg (5mL)",
+            freq: "TDS",
+            remarks: "Contraindicated for use in children <2 years old.\n2mg: May use chlorpheniramine tablet 4mg half tab.",
+            ref: "BNF, FUKKM, Lexidrug"
+        },
+        {
+            name: "PARACETAMOL 250mg/5mL SYRUP",
+            range: "10 - 15mg/kg/dose TDS/QID (max 75mg/kg/day)\nCHILD: 6 - 12 years: Max 500 mg per dose",
+            recDose: 15,
+            maxDose: 500, 
+            conc: 50,
+            type: "calc",
+            freq: "TDS/QID",
+            remarks: "Repeat every 4 - 6 hours when necessary.\nMaximum 4 doses in 24 hours.",
+            ref: "BNF, FUKKM"
+        },
+        {
+            name: "PROMETHAZINE 5mg/5mL SYRUP",
+            range: "0.2 - 0.5mg/kg/dose QID\n2 - 5 years: max 5mg/dose\n5 - 10 years: max 8mg/dose",
+            recDose: 0.35,
+            maxDose: 8, 
+            conc: 1,
+            type: "calc",
+            freq: "TDS",
+            remarks: "Contraindicated for use in children <2 years old.",
+            ref: "Lexidrug, Paeds Protocol"
+        },
+        {
+            name: "SALBUTAMOL 2mg/5mL SYRUP",
+            range: "2 - 5 years: 1mg TDS\n6 - 12 years: 2mg TDS",
+            recDose: "BY AGE",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "1mg (2.5mL)\n2mg (5mL)",
+            freq: "TDS/QID",
+            remarks: "Oral inhalation (MDI salbutamol) is preferred.",
+            ref: "FUKKM"
+        },
+        {
+            name: "LACTULOSE 3.35G/5ML SYRUP",
+            range: "1 - 3mL/kg/day OD or BD",
+            recDose: 0.5, 
+            maxDose: 30, 
+            type: "calc_ml", 
+            freq: "OD/BD",
+            remarks: "",
+            ref: "FUKKM, Lexidrug"
+        },
+        {
+            name: "PARACETAMOL SUPPOSITORY \n(125mg OR 250mg)",
+            range: "1 - 5 years (10-20kg) : 125 - 250mg PRN\n6 - 12 years (20-40kg): 250 - 500mg PRN\n(max 75mg/kg/day; max 4 doses per day)",
+            recDose: "BY AGE",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "PRN/TDS/ QID",
+            remarks: "CANNOT be cut before administration.",
+            ref: "FUKKM"
+        },
+        {
+            name: "CETIRIZINE 10mg TABLET",
+            range: "2 - 5 years: 2.5 - 5mg OD \n≥6 years : 5 - 10mg OD",
+            recDose: "BY AGE", 
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "OD",
+            remarks: "",
+            ref: "Lexidrug, FUKKM"
+        },
+        {
+            name: "PREDNISOLONE 5mg TABLET",
+            range: "0.5 - 1.0mg/kg OD\n(max 60mg/day)",
+            recDose: 1,
+            maxDose: 60, 
+            type: "calc_tab",
+            freq: "OD",
+            remarks: "Will be crushed and mix with water/syrup before each administration.",
+            ref: "Lexidrug"
+        },
+        { section: "2. ANTIBIOTICS" },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "TONSILITIS / PHARYNGITIS",
+            range: "25mg/kg BD x 10 days\n(max 500mg BD)",
+            recDose: 25,
+            maxDose: 500, 
+            conc: 50,
+            type: "calc",
+            freq: "BD <br> x 10 days",
+            remarks: "Consider 10 days if: Age 3 - 21 years, setting has high prevalence of rheumatic fever, patient has history of rheumatic fever or rheumatic heart disease.",
+            ref: "NAG"
+        },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "RHINOSINUSITIS",
+            range: "80 - 90mg/kg/day\n(max 2g/day)",
+            recDose: 45, 
+            maxDose: 1000, 
+            conc: 50,
+            type: "calc",
+            freq: "BD <br> x 5 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "COMMUNITY-ACQUIRED PNEUMONIA (CAP)",
+            range: "80 - 90mg/kg/day x 5 - 7 days\n(max 3g/day, 1g/dose)",
+            recDose: 45,
+            maxDose: 1000, 
+            conc: 50,
+            type: "calc",
+            freq: "BD <br> x 5-7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "CAP (WEIGHT BANDS)",
+            range: "WEIGHT BANDS DOSING:\n3 to < 6kg: 250mg BD\n6 to <10kg: 375mg BD\n10 to <15kg: 500mg BD\n15 to <20kg: 750mg BD\n≥20kg: 1g BD or 500mg TDS",
+            recDose: "BY WEIGHT BAND",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "5-7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "ACUTE OTITIS MEDIA",
+            range: "80 - 90mg/kg/day\n(max 3g/day)",
+            recDose: 40, 
+            maxDose: 1000, 
+            conc: 50,
+            type: "calc",
+            freq: "BD <br> < 2yrs: 7-10 days; <br> ≥2 yrs: 5-7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
+            disease: "LEPTOSPIROSIS (MILD)",
+            range: "40 - 45mg/kg/day\n(max 500mg/dose)",
+            recDose: 15, 
+            maxDose: 500,
+            conc: 50,
+            type: "calc",
+            freq: "TDS <br> x 7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+            {
+            name: "AMOXYCILLIN/CLAVULANATE 500mg/125mg TABLET\nAMOXYCILLIN/CLAVULANATE 200mg/28mg SYRUP",
+            disease: "ANIMAL BITES/LOWER URINARY TRACT INFECTION (UTI)",
+            range: "40 - 50mg/kg/day in 2 divided doses based on amoxycillin component\n(max 1g/dose amoxycillin component)",
+            recDose: 20, 
+            maxDose: 1000,
+            conc: 40,
+            type: "calc",
+            freq: "BD <br> SSTI: 5-7 days; <br> UTI: 3-5 days",
+            remarks: "If >25kg: Consider AMOXYCILLIN/CLAVUNATE 500mg/125mg 1 tablet TDS;\nAMOXYCILLIN/CLAVULANATE 200mg/28mg SYRUP is 7:1 ratio formulation, thus dosing is BD;\nAMOXYCILLIN/CLAVULANATE TABLET 500mg/125mg is 4:1 ratio formulation, dosing should be TDS.",
+            ref: "NAG"
+        },
+        {
+            name: "CLOXACILLIN 125mg/5mL SUSPENSION",
+            disease: "SKIN AND SOFT TISSUE INFECTION (SSTI)",
+            range: "50 - 100mg/kg/day in 4 divided doses\n(max 500mg/dose)",
+            recDose: 15, 
+            maxDose: 500,
+            conc: 25,
+            type: "calc",
+            freq: "QID <br> x 5-7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "METRONIDAZOLE 200mg TABLET",
+            disease: "AMOEBIASIS",
+            range: "15mg/kg TDS (max 800mg/dose)",
+            recDose: 15,
+            maxDose: 800,
+            type: "calc_tab",
+            freq: "TDS <br> x 7-10 days",
+            remarks: "1 tablet to dilute with 10 mL water = 200mg/10mL",
+            ref: "NAG"
+        },
+        {
+            name: "METRONIDAZOLE 200mg TABLET",
+            disease: "GIARDIASIS",
+            range: "10mg/kg/dose TDS\n(max 400mg/dose)",
+            recDose: 10,
+            maxDose: 400,
+            type: "calc_tab",
+            freq: "TDS <br> x 7-10 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "METRONIDAZOLE 200mg TABLET",
+            disease: "LIVER ABSCESS (AMOEBIC)",
+            range: "15mg/kg/dose TDS (max 800mg/dose)",
+            recDose: 15,
+            maxDose: 800,
+            type: "calc_tab",
+            freq: "TDS <br> x 10-14 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "ERYTHROMYCIN ES 200mg/5mL SUSPENSION\nERYTHROMYCIN 400mg TABLET",
+            disease: "TONSILITIS / PHARYNGITIS",
+            range: "40 - 50 mg/kg/day in 2 divided dose\n(max 800mg/dose)",
+            recDose: 20,
+            maxDose: 800,
+            conc: 40,
+            type: "calc",
+            freq: "BD <br> x 10 days",
+            remarks: "Consider 10 days if: Age is 3 - 21 years, setting has high prevalence of rheumatic fever, patient has history of rheumatic fever or rheumatic heart disease.",
+            ref: "NAG"
+        },
+        {
+            name: "ERYTHROMYCIN ES 200mg/5mL SUSPENSION\nERYTHROMYCIN 400mg TABLET",
+            disease: "CAP",
+            range: "30 - 50 mg/kg/day\n(max 800mg/dose)",
+            recDose: 20,
+            maxDose: 800,
+            conc: 40,
+            type: "calc",
+            freq: "BD <br> x 5-7 days",
+            remarks: "Macrolide antibiotics should be used if either mycoplasm or chlamydia pnuemonia is suspected. It may be started in  school-going children where disease predominates.",
+            ref: "NAG"
+        },
+            {
+            name: "ERYTHROMYCIN ES 200mg/5mL SUSPENSION\nERYTHROMYCIN 400mg TABLET",
+            disease: "DIPHTERIA close contact prophylaxis",
+            range: "40 - 50 mg/kg/day in 4 divided doses\n(max 800mg QID)",
+            recDose: 10,
+            maxDose: 800,
+            conc: 40,
+            type: "calc",
+            freq: "QID <br> x 7-10 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "CEPHALEXIN 500mg CAPSULE",
+            disease: "TONSILITIS / PHARYNGITIS / SSTI / PYELONEPHRITIS",
+            range: "25 - 50 mg/kg/day (max 2g/day)",
+            recDose: 25, 
+            maxDose: 1000, 
+            type: "calc_tab",
+            freq: "BD",
+            remarks: "TONSILITIS: 10 days\nSSTI: 5-7 days\nACUTE PYELONEPHRITIS (>3 months old): 7-10 days",
+            ref: "NAG"
+        },
+        {
+            name: "PHENOXYMETHYLPENICILLIN (PEN V) 125mg TABLET",
+            disease: "TONSILITIS / PHARYNGITIS",
+            range: "25 - 50mg/kg/day (max 2g/day)",
+            recDose: 10,
+            maxDose: 500, 
+            type: "calc_tab",
+            freq: "QID <br> x 10 days",
+            remarks: "Consider 10 days if: <b>Age is 3 - 21 years, setting has high prevalence of rheumatic fever, patient has history of rheumatic fever or rheumatic heart disease <b>.",
+            ref: "NAG"
+        },
+        {
+            name: "DOXYCYCLINE 100mg CAPSULE",
+            disease: "LEPTOSPIROSIS (MILD)",
+            range: "2mg/kg/dose BD (max 200mg/day)",
+            recDose: 2,
+            maxDose: 100, 
+            type: "calc_tab",
+            freq: "BD <br> x 7 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "SULFAMETHOXAZOLE / TRIMETHOPRIM 400mg/80mg TABLET",
+            disease: "LOWER UTI",
+            range: "TMP component 8 - 10mg/kg/day\n(max 800/160mg BD)",
+            recDose: 4,
+            maxDose: 160, 
+            type: "calc_tab",
+            freq: "BD <br> x 3-5 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        {
+            name: "NITROFURANTOIN 100mg TABLET",
+            disease: "LOWER UTI",
+            range: "1mg/kg/dose (max 100mg/dose)",
+            recDose: 1,
+            maxDose: 100,
+            type: "calc_tab",
+            freq: "QID <br> x 3-5 days",
+            remarks: "",
+            ref: "NAG"
+        },
+        { section: "3. ANTIVIRAL" },
+        {
+            name: "ACYCLOVIR 200mg/800mg TABLET",
+            disease: "VARICELLA ZOSTER",
+            range: "20mg/kg/dose QID (max 800mg/dose)",
+            recDose: 20,
+            maxDose: 800,
+            type: "calc_tab",
+            freq: "QID <br> x 5 days",
+            remarks: "",
+            ref: "Lexidrug"
+        },
+        {
+            name: "ACYCLOVIR 200mg/800mg TABLET",
+            disease: "VARICELLA ZOSTER (BY AGE)",
+            range: "< 2 years: 200mg QID\n2 - 5 years: 400mg QID\n≥ 6 years: 800mg QID",
+            recDose: "BY AGE",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "QID <br> x 5 days",
+            remarks: "VARICELLA ZOSTER is usually <b>SELF LIMITING<b> if <b><13 years old<b>, hence acyclovir is NOT RECOMMENDED unless patient has risk for<b> pneumonia<b> or <b>complications<b> from varicella zoster infection.<br> Acyclovir can be given to children ≥13 years old.",
+            ref: "NAG"
+        },
+        {
+            name: "ACYCLOVIR 200mg/800mg TABLET",
+            disease: "HERPES ZOSTER",
+            range: "<12 years: 20mg/kg/dose QID\n≥12 years: 800mg 5x/day",
+            recDose: 20,
+            maxDose: 800,
+            type: "calc_tab",
+            freq: "<12 yrs: QID; <br> ≥12 yrs: 5x/day <br> x 5 days",
+            remarks: "Immunocompromised host: 7 -10 days",
+            ref: "Lexidrug"
+        },
+        {
+            name: "OSELTAMIVIR 75mg CAPSULE",
+            disease: "INFLUENZA (<9 mo)",
+            range: "<9 months old",
+            recDose: 3,
+            maxDose: 75,
+            type: "calc_tab",
+            freq: "BD <br> x 5 days",
+            remarks: "Each dose will be freshly prepared with water & syrup.<br> Immunocompromised host: 10 days",
+            ref: "NAG"
+        },
+        {
+            name: "OSELTAMIVIR 75mg CAPSULE",
+            disease: "INFLUENZA (9-11 mo)",
+            range: "9 - 11 months old",
+            recDose: 3.5,
+            maxDose: 75,
+            type: "calc_tab",
+            freq: "BD <br> x 5 days",
+            remarks: "Each dose will be freshly prepared with water & syrup. <br> Immunocompromised host: 10 days.",
+            ref: "NAG"
+        },
+        {
+            name: "OSELTAMIVIR 75mg CAPSULE",
+            disease: "INFLUENZA (CHILD)",
+            range: "1 - 12 years:\n≤15 kg: 30mg BD\n>15 - 23 kg: 45mg BD\n>23 - 40 kg: 60mg BD\n>40 kg: 75mg BD\n≥13 years: 75mg BD",
+            recDose: "BY WEIGHT",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "",
+            freq: "BD <br> x 5 days",
+            remarks: "Each dose will be freshly prepared with water & syrup. <br> Immunocompromised host: 10 days.",
+            ref: "NAG"
+        },
+        { section: "4. ANTIFUNGAL" },
+        {
+            name: "GRISEOFLUVIN 125mg TABLET\n(= MICROSIZE 250mg)",
+            disease: "TINEA CAPITIS",
+            range: "MICROSIZE: 10 - 20 mg/kg/day (max 750mg/day)",
+            recDose: 10,
+            maxDose: 750, // Per day
+            type: "calc_tab",
+            freq: "OD/BD <br> x 6 weeks",
+            remarks: "Suggest to round up to the nearest 250mg dose.",
+            ref: "NAG"
+        },
+        { section: "5. ANTITUBERCULOSIS" },
+        {
+            name: "ISONIAZID 40mg/mL SUSPENSION\nISONIAZID 100mg TABLET",
+            disease: "TUBERCULOSIS (TB)",
+            range: "7 - 15mg/kg OD (max 300mg)\nTB MENINGITIS: 15 - 20mg/kg OD",
+            recDose: 10,
+            maxDose: 300,
+            conc: 40,
+            type: "calc",
+            freq: "OD",
+            remarks: "<b> PYRIDOXINE 5 - 10 mg OD <b> needs to be added if isoniazid is prescribed. <br> (freshly prepared with <b> PYRIDOXINE 10mg TABLET <b> each dose)",
+            ref: "CPG TB"
+        },
+        {
+            name: "RIFAMPICIN 50mg/mL SUSPENSION\nRIFAMPICIN 150mg OR 300mg CAPSULE",
+            disease: "TUBERCULOSIS",
+            range: "10 - 20mg/kg OD (max 600mg)",
+            recDose: 15,
+            maxDose: 600,
+            conc: 50,
+            type: "calc",
+            freq: "OD",
+            remarks: "In children <5 years old, higher doses of anti-TB drugs are required to achieve effective bactericidal activity compared with older children and adults.",
+            ref: "CPG TB"
+        },
+        {
+            name: "RIFAMPICIN 50mg/mL SUSPENSION\nRIFAMPICIN 150mg OR 300mg CAPSULE",
+            disease: "LEPROSY post-exposure prophylaxis",
+            range: "SINGLE DOSE REGIMEN:\n2 to <6 years: 10 - 15mg/kg\n6 - 9 years (<20kg): 150mg\n6 - 9 years (≥20kg): 300mg\n10 - 14 years: 450mg\n≥15 years: 600mg",
+            recDose: "BY AGE & WEIGHT",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "One dose only",
+            remarks: "Single dose rifampicin should be given to contacts only after the index case has taken treatment for at least 4 weeks to allow time for patients to be non-infectious.",
+            ref: "NAG, Manual Kusta Kebangsaan"
+        },
+        {
+            name: "ETHAMBUTOL 100mg/mL SUSPENSION\nETHAMBUTOL 400mg TABLET",
+            disease: "TUBERCULOSIS",
+            range: "15 - 25mg/kg OD (max 1g)",
+            recDose: 20,
+            maxDose: 1000,
+            conc: 100,
+            type: "calc",
+            freq: "OD",
+            remarks: "",
+            ref: "CPG TB"
+        },
+        {
+            name: "PYRAZINAMIDE 200mg/mL SUSPENSION\nPYRAZINAMIDE 500mg TABLET",
+            disease: "TUBERCULOSIS",
+            range: "30 - 40mg/kg OD (max 2g)",
+            recDose: 35,
+            maxDose: 2000,
+            conc: 200,
+            type: "calc",
+            freq: "OD",
+            remarks: "",
+            ref: "CPG TB"
+        },
+        {
+            name: "RIFAMPICIN 75mg / ISONIAZID 50mg / PYRAZINAMIDE 150mg (3FDC)",
+            disease: "TUBERCULOSIS",
+            range: "4 to <8kg: 1 tablet OD\n8 to <12kg: 2 tablets OD\n12 to <16kg: 3 tablets OD\n16 to <25kg: 4 tablets OD\n≥25kg: Adult dose",
+            recDose: "BY WEIGHT",
+            type: "text",
+            textDose: "SEE RANGE",
+            textVol: "-",
+            freq: "OD",
+            remarks: "<b> ETHAMBUTOL <b> should be added in the intensive phase for children with extensive disease.",
+            ref: "CPG TB"
+        },
+    ];
+
+function renderTable() {
+    const weight = parseFloat(weightInput.value);
+    const validWeight = !isNaN(weight) && weight > 0;
+    const searchTerm = document.getElementById("searchInput").value.toUpperCase(); // Get search term
+    
+    tableBody.innerHTML = '';
+
+    // NEW: Filter the data before starting the loop
+    const filteredData = data.filter(item => {
+        if (item.section) return true; // Keep sections
+        const nameMatch = item.name ? item.name.toUpperCase().includes(searchTerm) : false;
+        const diseaseMatch = item.disease ? item.disease.toUpperCase().includes(searchTerm) : false;
+        const rangeMatch = item.range ? item.range.toUpperCase().includes(searchTerm) : false;
+        return nameMatch || diseaseMatch || rangeMatch;
+    });
+
+    // CHANGE: Loop through 'filteredData' instead of 'data'
+    for (let i = 0; i < filteredData.length; i++) {
+        const row = filteredData[i];
+        const tr = document.createElement('tr');
+
+        // Handle Teal Section Headers
+        if (row.section) {
+            // Only show section if it's not empty
+            const nextItem = filteredData[i + 1];
+            if (!nextItem || nextItem.section) continue; 
+
+            tr.classList.add('is-section');
+            tr.innerHTML = `<td colspan="7" class="section-header">${row.section}</td>`;
+            tableBody.appendChild(tr);
+            continue;
+        }
+
+        // --- ROW MERGING LOGIC (Use filteredData here too) ---
+        let firstColumnHtml = '';
+        const isFirstInGroup = (i === 0 || filteredData[i-1].section || filteredData[i-1].name !== row.name);
+        
+        if (isFirstInGroup) {
+            let rowSpanCount = 1;
+            for (let j = i + 1; j < filteredData.length; j++) {
+                if (filteredData[j].name === row.name && !filteredData[j].section) {
+                    rowSpanCount++;
+                } else {
+                    break;
+                }
+            }
+            firstColumnHtml = `<td class="col-item" rowspan="${rowSpanCount}" style="text-align:left; vertical-align:middle;">
+                                ${row.name.replace(/\n/g, '<br>')}
+                               </td>`;
+        }
+
+        // --- DOSE CALCULATION & MAX DOSE INDICATOR ---
+        let rangeHtml = (row.disease ? `<span class="disease-tag">${row.disease}</span>` : '') + row.range.replace(/\n/g, '<br>');
+        let doseDisplay = "-", volDisplay = "-", isMaxHit = false;
+
+        if (validWeight) {
+            if (row.type === 'calc' || row.type === 'calc_tab' || row.type === 'calc_ml') {
+                let rawDose = row.recDose * weight;
+                
+                // 1. Check for Max Dose
+                if (row.maxDose && rawDose > row.maxDose) { 
+                    rawDose = row.maxDose; 
+                    isMaxHit = true; 
+                }
+                
+                let doseNum = rawDose.toFixed(0);
+                
+                // 2. Volume calculation (No dots here)
+                volDisplay = row.type === 'calc_ml' ? rawDose.toFixed(1) + " mL" : 
+                             (row.type === 'calc' ? (rawDose / row.conc).toFixed(1) + " mL" : "-");
+
+                // 3. Dose Display (Dots under number only, left aligned)
+                if (isMaxHit) {
+                    doseDisplay = `<div class="max-dots-container">${doseNum}<span class="max-dots">....</span></div> mg`;
+                } else {
+                    doseDisplay = doseNum + " mg";
+                }
+
+            } else {
+                // For non-calculation rows (text-based)
+                doseDisplay = row.textDose || "-";
+                volDisplay = row.textVol ? row.textVol.replace(/\n/g, '<br>') : "-";
+            }
+        }
+        const maxClass = isMaxHit ? 'max-hit' : '';
+
+        // Build the rest of the row (excluding the first column if it's being merged)
+        tr.innerHTML = `
+            ${firstColumnHtml}
+            <td class="col-range">${rangeHtml}</td>
+            <td class="col-calc ${maxClass}">${doseDisplay}</td>
+            <td class="col-calc ${maxClass}">${volDisplay}</td>
+            <td class="col-freq">${row.freq}</td>
+            <td class="col-remarks">${row.remarks.replace(/\n/g, '<br>')}</td>
+            <td class="col-ref">${row.ref}</td>
+        `;
+        tableBody.appendChild(tr);
+    }
+}
+
+    // Initialize
+    renderTable();
+    weightInput.addEventListener('input', renderTable);
+
+    const viewport = document.querySelector('.table-viewport');
+    const topBtn = document.getElementById("backToTop");
+
+    // Show button when user scrolls down 300px
+    viewport.onscroll = function() {
+        if (viewport.scrollTop > 300) {
+            topBtn.style.display = "block";
+        } else {
+            topBtn.style.display = "none";
+        }
+    };
+
+    // Smooth scroll back to top
+    function scrollToTop() {
+        viewport.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+</script>
+
+</body>
+</html>
