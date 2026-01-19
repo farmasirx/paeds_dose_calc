@@ -269,6 +269,27 @@
             min-width: 850px; 
         }
     }
+/* Precise brand mark to match TM size/position */
+.brand-mark {
+    font-size: 6px;        /* Matches standard TM size */
+    font-weight: 600;       /* Bold enough to be seen at small size */
+    color: #4a148c;         /* Professional Dark Purple */
+ /* 1. Set the base behavior to superscript */
+    vertical-align: super;  
+    
+    /* 2. Use relative positioning to "nudge" it higher manually */
+    position: relative;
+    top: -5px;
+    letter-spacing: 0.5px;
+    font-family: sans-serif; /* Ensures clean letters at small size */
+}
+.copyright-text {
+        margin-top: 10px;
+        font-weight: 400; /* Normal/Regular font */
+        color: #666;
+        font-size: 14px;
+        font-style: normal;
+      }
 </style>
 
 </head>
@@ -280,7 +301,7 @@
             <img src="logo.png" class="page-logo" alt="Logo">
         </a>
 
-        <h1>PAEDIATRIC DOSE CALCULATOR</h1>
+        <h1>PAEDIATRIC DOSE CALCULATOR<span class="brand-mark">WY</span></h1>
         <div class="input-wrapper">
             <label for="weightInput">PATIENT WEIGHT (KG):</label>
             <input type="number" id="weightInput" step="0.1" placeholder="0">
@@ -308,9 +329,13 @@
         </table>
         
         <div class="footer-disclaimer">
+<div style="margin-bottom: 5px;">&copy; All Rights Reserved.</div>
             Disclaimer: This calculator is intended for reference purposes only.
             <div class="timestamp">Clinical data last verified: 30 December 2025</div>
         </div>
+<div class="copyright-text">
+            &copy; All Rights Reserved.
+          </div>
         <button id="backToTop" onclick="scrollToTop()">↑</button>
     </div>
 
