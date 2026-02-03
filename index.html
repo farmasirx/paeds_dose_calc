@@ -450,12 +450,12 @@ const viewport = document.querySelector('.table-viewport');
         },
         {
             name: "LACTULOSE 3.35G/5ML SYRUP",
-            range: "1 - 3mL/kg/day OD or BD",
-            recDose: 0.5, 
+            range: "1 - 3mL/kg/day OD or divided BD\n(max 60mL/day)",
+            recDose: 1, 
             maxDose: 30, 
             type: "calc_ml", 
             freq: "OD/BD",
-            remarks: "",
+            remarks: "Oral solution contains 10g lactulose per 15mL.\nAdjust dose according to response",
             ref: "FUKKM, Lexidrug"
         },
         {
@@ -894,7 +894,6 @@ const viewport = document.querySelector('.table-viewport');
     ];
 
 function renderTable() {
-    // 1. Month Clamping
     if (ageMonthsInput.value !== "") {
         if (parseFloat(ageMonthsInput.value) > 11) ageMonthsInput.value = 11;
         if (parseFloat(ageMonthsInput.value) < 0) ageMonthsInput.value = 0;
@@ -931,7 +930,6 @@ function renderTable() {
                 continue;
             }
 
-            // --- Rowspan Logic ---
             let firstColumnHtml = '';
             const isFirstInGroup = (i === 0 || filteredData[i - 1].section || filteredData[i - 1].name !== row.name);
             
@@ -950,13 +948,17 @@ function renderTable() {
             let doseDisplay = "-", volDisplay = "-", isMaxHit = false;
             let warningActive = false;
 
+            // 1. Age Restriction Check
             if (ageEntered && row.minAgeMonths && totalMonths < row.minAgeMonths) {
                 doseDisplay = `<span style="color:red; font-weight:bold; font-size:11px;">NOT RECOMMENDED</span>`;
-                volDisplay = `<span style="color:red; font-weight:bold; font-size:11px;">AGE < 2Y</span>`;
+                volDisplay = `<span style="color:red; font-weight:bold; font-size:11px;">AGE < ${row.minAgeMonths/12}Y</span>`;
                 warningActive = true;
             }
 
+            // 2. Calculation Priority Logic
             if (!warningActive && canCalc) {
+                
+                // Priority A: Age Brackets (Fixed - Logic now stays open)
                 if (row.ageBrackets) {
                     const b = row.ageBrackets.find(x => totalMonths >= x.minMo && totalMonths <= x.maxMo);
                     if (b) {
@@ -974,36 +976,48 @@ function renderTable() {
                     }
                 }
 
+                // Priority B: Weight Brackets (if no age bracket was matched)
                 if (doseDisplay === "-" && row.weightBrackets) {
                     const wb = row.weightBrackets.find(w => weight >= w.minWt && weight <= w.maxWt);
                     if (wb) { doseDisplay = wb.dose; volDisplay = wb.vol; }
                 }
 
+                // Priority C: Standard Math Calculations
                 if (doseDisplay === "-" && (row.type === 'calc' || row.type === 'calc_tab' || row.type === 'calc_ml')) {
                     let rawDose = row.recDose * weight;
                     let currentMax = row.maxDose;
+
                     if (row.maxAgeBrackets) {
                         const mb = row.maxAgeBrackets.find(x => totalMonths >= x.minMo && totalMonths <= x.maxMo);
                         if (mb) currentMax = mb.limit;
                     }
-                    if (currentMax && rawDose > currentMax) { rawDose = currentMax; isMaxHit = true; }
-                    
-                    doseDisplay = isMaxHit ? `<div class="max-dots-container">${rawDose.toFixed(0)}<span class="max-dots">....</span></div> mg` : rawDose.toFixed(0) + " mg";
-                    
-                    if (row.conc) {
-                        volDisplay = (rawDose / row.conc).toFixed(1) + " mL";
-                    } else if (row.type === 'calc_ml') {
-                        volDisplay = rawDose.toFixed(1) + " mL";
-                    } else {
-                        volDisplay = "-";
+
+                    if (currentMax && rawDose > currentMax) { 
+                        rawDose = currentMax; 
+                        isMaxHit = true; 
+                    }
+
+                    if (row.type === 'calc_ml') {
+    doseDisplay = "-";
+    volDisplay = isMaxHit ? 
+        `<div class="max-dots-container">${rawDose.toFixed(1)}<span class="max-dots">....</span></div> mL` : 
+        rawDose.toFixed(1) + " mL";
+} else {
+                        // Standard mg/mL columns
+                        doseDisplay = isMaxHit ? 
+                            `<div class="max-dots-container">${rawDose.toFixed(0)}<span class="max-dots">....</span></div> mg` : 
+                            rawDose.toFixed(0) + " mg";
+                        
+                        volDisplay = row.conc ? (rawDose / row.conc).toFixed(1) + " mL" : "-";
                     }
                 }
-            }
+            } // End of Calculation Logic
 
-            if (doseDisplay === "-") {
-                doseDisplay = row.textDose || "SEE RANGE";
-                volDisplay = row.textVol || "-";
-            }
+            // 3. Fallback for static text (If no calculation was possible)
+         if (doseDisplay === "-" && volDisplay === "-") {
+    doseDisplay = row.textDose || "SEE RANGE";
+    volDisplay = row.textVol || "-";
+}
 
             const maxClass = isMaxHit ? 'max-hit' : '';
             
@@ -1020,6 +1034,7 @@ function renderTable() {
         }
     } catch (err) { console.error("Table Render Error: ", err); }
 }
+
     // 5. Initializers
     [weightInput, ageYearsInput, ageMonthsInput].forEach(el => el.addEventListener('input', renderTable));
     renderTable();
