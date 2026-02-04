@@ -673,17 +673,6 @@ const viewport = document.querySelector('.table-viewport');
             ref: "NAG"
         },
         {
-            name: "PHENOXYMETHYLPENICILLIN (PEN V) 125mg TABLET",
-            disease: "TONSILITIS / PHARYNGITIS",
-            range: "25 - 50mg/kg/day (max 2g/day)",
-            recDose: 10,
-            maxDose: 500, 
-            type: "calc_tab",
-            freq: "QID <br> x 10 days",
-            remarks: "Consider 10 days if: <b>Age is 3 - 21 years</b>, setting has high prevalence of rheumatic fever, patient has history of rheumatic fever or rheumatic heart disease.",
-            ref: "NAG"
-        },
-        {
             name: "DOXYCYCLINE 100mg CAPSULE",
             disease: "LEPTOSPIROSIS (MILD)",
             range: "2mg/kg/dose BD (max 200mg/day)",
@@ -755,31 +744,24 @@ const viewport = document.querySelector('.table-viewport');
         },
         {
             name: "OSELTAMIVIR 75mg CAPSULE",
-            disease: "INFLUENZA (<9 mo)",
-            range: "<9 months old: 3mg/kg BD",
-            recDose: 3,
-            maxDose: 75,
-            type: "calc_tab",
-            freq: "BD <br> x 5 days",
-            remarks: "Dilution: 1 cap (75mg) + 5mL water = 15mg/mL. <br> Each dose will be freshly prepared with water & syrup. <br> Immunocompromised host: 10 days.",
-            ref: "NAG"
-        },
-        {
-            name: "OSELTAMIVIR 75mg CAPSULE",
-            disease: "INFLUENZA (9-11 mo)",
-            range: "9 - 11 months old: 3.5mg/kg BD",
-            recDose: 3.5,
-            maxDose: 75,
-            type: "calc_tab",
-            freq: "BD <br> x 5 days",
-            remarks: "Dilution: 1 cap (75mg) + 5mL water = 15mg/mL. <br> Each dose will be freshly prepared with water & syrup. <br> Immunocompromised host: 10 days.",
-            ref: "NAG"
-        },
-        {
-            name: "OSELTAMIVIR 75mg CAPSULE",
-            disease: "INFLUENZA (CHILD)",
-            range: "1 - 12 years:\n≤15 kg: 30mg BD\n>15 - 23 kg: 45mg BD\n>23 - 40 kg: 60mg BD\n>40 kg: 75mg BD\n≥13 years: 75mg BD",
+            disease: "INFLUENZA",
+            range: "<9 months old: 3mg/kg BD\n9-11 months old: 3.5mg/kg BD\n1 - 12 years:\n≤15 kg: 30mg BD\n>15 - 23 kg: 45mg BD\n>23 - 40 kg: 60mg BD\n>40 kg: 75mg BD\n≥13 years: 75mg BD",
             type: "text",
+conc: 15,
+ageBrackets: [
+        { 
+            minMo: 0, maxMo: 8, 
+            useWeight: true, calcDose: 3, limit: 75 
+        }, // <9 months: 3mg/kg
+        { 
+            minMo: 9, maxMo: 11, 
+            useWeight: true, calcDose: 3.5, limit: 75 
+        }, // 9-11 months: 3.5mg/kg
+        { 
+            minMo: 12, maxMo: 999, 
+            useWeightBrackets: true 
+        } // 1 year+: Use Weight Bands
+    ],
            weightBrackets: [
             { minWt: 0,    maxWt: 15,   dose: "30 mg", vol: "2 mL" },
             { minWt: 15.1, maxWt: 23,   dose: "45 mg", vol: "3 mL" },
@@ -966,6 +948,7 @@ function renderTable() {
                             let calc = b.calcDose * weight;
                             if (b.limit && calc > b.limit) { calc = b.limit; isMaxHit = true; }
                             doseDisplay = calc.toFixed(0) + " mg";
+if (row.conc) volDisplay = (calc / row.conc).toFixed(1) + " mL";
                         } else if (b.useWeightBrackets) {
                             const wb = row.weightBrackets.find(w => weight >= w.minWt && weight <= w.maxWt);
                             if (wb) { doseDisplay = wb.dose; volDisplay = wb.vol; }
