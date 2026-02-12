@@ -371,7 +371,7 @@ const viewport = document.querySelector('.table-viewport');
         { section: "1. COMMON ITEMS" },
 {
             name: "PARACETAMOL 250mg/5mL SYRUP",
-            range: "10 - 15mg/kg/dose TDS/QID (max 75mg/kg/day)\nCHILD: 6 - 12 years: Max 500 mg per dose",
+            range: "10 - 15mg/kg/dose TDS/QID (max 75mg/kg/day up to 4g/day)\nCHILD: 6 - 12 years: Max 500 mg per dose",
             recDose: 15,
             maxDose: 500, 
             conc: 50,
@@ -429,7 +429,7 @@ const viewport = document.querySelector('.table-viewport');
         maxAgeBrackets: [
             { minMo: 24, maxMo: 71, limit: 5 },
             { minMo: 72, maxMo: 120, limit: 8 },
-            { minMo: 121, maxMo: 144, limit: 25}
+            { minMo: 121, maxMo: 144, limit: 10}
         ],
         freq: "TDS",
         remarks: "Contraindicated for use in children <2 years old.",
@@ -458,9 +458,19 @@ const viewport = document.querySelector('.table-viewport');
             remarks: "Oral solution contains 10g lactulose per 15mL.\nAdjust dose according to response",
             ref: "FUKKM, Lexidrug"
         },
+  {
+            name: "MAGNESIUM TRISILICATE MIXTURE",
+            range: "5 - 12 years: 5 - 10mL TDS/PRN\n>12 years: 10 - 20mL TDS/PRN",
+            type: "text",
+            minAgeMonths: 60,
+            ageBrackets: [{ minMo: 60, maxMo: 144, dose: "-", vol: "5 - 10 mL" }],
+            freq: "TDS/PRN",
+            remarks: "Each 5mL contains Magnesium Trisilicate BP 250mg, Light Magnesium Carbonate BP 250mg & Sodium Bicarbonate BP 250mg.",
+            ref: "FUKKM, PI"
+        },
         {
             name: "PARACETAMOL SUPPOSITORY \n(125mg OR 250mg)",
-            range: "1 - 5 years (10-20kg) : 125 - 250mg PRN\n6 - 12 years (20-40kg): 250 - 500mg PRN\n(max 75mg/kg/day)",
+            range: "1 - 5 years (10-20kg) : 125 - 250mg PRN\n6 - 12 years (20-40kg): 250 - 500mg PRN\n(max 75mg/kg/day up to 4g/day)",
             type: "text",
             textDose: "SEE RANGE",
             textVol: "-",
@@ -470,7 +480,7 @@ const viewport = document.querySelector('.table-viewport');
         },
         {
             name: "CETIRIZINE 10mg TABLET",
-            range: "2 - 5 years: 5mg OD \n≥6 years : 10mg OD",
+            range: "2 - 5 years: 2.5 - 5mg OD \n≥6 years : 5 - 10mg OD",
            type: "text",
     minAgeMonths: 24, 
     ageBrackets: [
@@ -479,7 +489,17 @@ const viewport = document.querySelector('.table-viewport');
     ],
             freq: "OD",
             remarks: "",
-            ref: "FUKKM"
+            ref: "FUKKM, Lexidrug"
+        },
+         {
+            name: "IBUPROFEN 200mg TABLET",
+            range: "5 - 10mg/kg/dose TDS/QID\n(max 40mg/kg/day up to 2.4g/day)",
+            recDose: 10,
+            maxDose: 400, 
+            type: "calc_tab",
+            freq: "TDS/QID",
+            remarks: "Not recommended for <7kg.\nTo crush and mix with water/syrup before each administration.",
+            ref: "FUKKM, Lexidrug"
         },
         {
             name: "PREDNISOLONE 5mg TABLET",
@@ -488,9 +508,10 @@ const viewport = document.querySelector('.table-viewport');
             maxDose: 60, 
             type: "calc_tab",
             freq: "OD",
-            remarks: "Will be crushed and mix with water/syrup before each administration.",
+            remarks: "To crush and mix with water/syrup before each administration.",
             ref: "Lexidrug"
         },
+
         { section: "2. ANTIBIOTICS" },
         {
             name: "AMOXYCILLIN 250mg/5mL SUSPENSION\nAMOXYCILLIN 500mg CAPSULE",
@@ -745,7 +766,7 @@ const viewport = document.querySelector('.table-viewport');
         {
             name: "OSELTAMIVIR 75mg CAPSULE",
             disease: "INFLUENZA",
-            range: "<9 months old: 3mg/kg BD\n9-11 months old: 3.5mg/kg BD\n1 - 12 years:\n≤15 kg: 30mg BD\n>15 - 23 kg: 45mg BD\n>23 - 40 kg: 60mg BD\n>40 kg: 75mg BD\n≥13 years: 75mg BD",
+            range: "<9 months old: 3mg/kg BD\n9 - 11 months old: 3.5mg/kg BD\n1 - 12 years:\n≤15 kg: 30mg BD\n>15 - 23 kg: 45mg BD\n>23 - 40 kg: 60mg BD\n>40 kg: 75mg BD\n≥13 years: 75mg BD",
             type: "text",
 conc: 15,
 ageBrackets: [
@@ -783,6 +804,18 @@ ageBrackets: [
             freq: "OD/BD <br> x 6 weeks",
             remarks: "Suggest to round up to the nearest 250mg dose.",
             ref: "NAG"
+        },
+          {
+           name: "NYSTATIN 100,000units/mL ORAL SUSPENSION",
+        range: "Infants (1 - 12 months): 100,000 - 200,000 units QID\n>1 year: 100,000 - 600,000 units QID",
+      type: "text",
+        ageBrackets: [
+            { minMo: 1,  maxMo: 12,  dose: "100,000 units", vol: "1 mL" },
+            { minMo: 13, maxMo: 999,  dose: "500,000 units", vol: "5 mL" }
+        ],
+        freq: "QID",
+        remarks: "Suspension should be swished throughout and retained in the mouth for as long as possible before swallowing.\nFor infants, apply one half of dose in each side of mouth.\nBest to administer after meals or avoid food or drink for 1 hour after dose",
+        ref: "PI, Lexidrug"
         },
         { section: "5. ANTITUBERCULOSIS" },
         {
