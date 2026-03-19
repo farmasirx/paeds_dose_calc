@@ -661,13 +661,13 @@ const viewport = document.querySelector('.table-viewport');
         },
             {
             name: "AMOXICILLIN/CLAVULANATE 500mg/125mg TABLET\nAMOXICILLIN/CLAVULANATE 200mg/28mg SYRUP",
-            disease: "ANIMAL BITES/LOWER URINARY TRACT INFECTION (UTI)",
+            disease: "AOM/ANIMAL BITES/LOWER URINARY TRACT INFECTION (UTI)",
             range: "40 - 50mg/kg/day in 2 divided doses based on amoxicillin component\n(max 1g/dose amoxicillin component)",
             recDose: 20, 
             maxDose: 1000,
             conc: 40,
             type: "calc",
-            freq: "BD <br> SSTI: 5-7 days; <br> UTI: 3-5 days",
+            freq: "BD <br> AOM (≥2 yrs): 5-7 days; <br> SSTI: 5-7 days; <br> UTI: 3-5 days",
             remarks: "If >25kg: Consider <b> AMOXICILLIN/CLAVUNATE 500mg/125mg TABLET </b> 1 tablet TDS;\n !Note: AMOXICILLIN/CLAVULANATE 200mg/28mg SYRUP is <b>7:1</b> ratio formulation, thus dosing is <b>BD</b>;\n AMOXICILLIN/CLAVULANATE 500mg/125mg TABLET is <b>4:1</b> ratio formulation, dosing should be <b>TDS</b>.",
             ref: "NAG"
         },
@@ -829,7 +829,12 @@ const viewport = document.querySelector('.table-viewport');
             recDose: 20,
             maxDose: 800,
             type: "calc_tab",
-            freq: "<12 yrs: QID; <br> ≥12 yrs: 5x/day <br> x 5 days",
+                        freq: (totalMonths) => {
+    if (!totalMonths) return "QID";
+    return totalMonths < 144 ? 
+    "QID <br> x 5 days" 
+      : "5x/day <br> x 5 days";
+  },
             remarks: "Immunocompromised host: 7 -10 days",
             ref: "Lexidrug"
         },
@@ -884,7 +889,7 @@ ageBrackets: [
             { minMo: 13, maxMo: 999,  dose: "500,000 units", vol: "5 mL" }
         ],
         freq: "QID",
-        remarks: "Suspension should be swished throughout and retained in the mouth for as long as possible before swallowing.\nFor infants, apply one half of dose in each side of mouth.\nBest to administer after meals or avoid food or drink for 1 hour after dose",
+        remarks: "Suspension should be swished throughout and retained in the mouth <b> as long as possible </b> before swallowing.\nFor infants, apply one half of dose in each side of mouth.\nBest to administer <b> after meals </b> or avoid food or drink for 1 hour after dose",
         ref: "PI, Lexidrug"
         },
         { section: "5. ANTITUBERCULOSIS" },
