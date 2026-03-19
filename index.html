@@ -78,7 +78,7 @@ input:-ms-input-placeholder { font-size: 11px; font-weight: normal; }
     label { font-weight: bold; color: var(--header-teal); font-size: 16px; }
     input[type="number"] { width: 80px; padding: 8px; font-size: 18px; font-weight: bold; text-align: center; background-color: var(--input-orange); border: 1.5px solid var(--input-border); border-radius: 6px; outline: none;transition: border-color 0.2s; }
     .search-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 5px; }
-    #searchInput { width: 100%; padding: 10px 40px 10px 15px; border: 1px solid var(--header-teal); border-radius: 20px; outline: none; box-sizing: border-box; font-size: 15px; }
+    #searchInput { width: 100%; padding: 10px 40px 10px 15px; border: 1px solid var(--header-teal); border-radius: 20px; outline: none; box-sizing: border-box; font-size: 16px; }
     .btn-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--header-teal); font-size: 20px; font-weight: bold; cursor: pointer; }
 input[type="number"]:focus {
     border-color: #004d40; /* Darker teal highlight when clicking */
@@ -87,7 +87,7 @@ input[type="number"]:focus {
     margin-left: 10px;
     padding: 4px 10px;
     font-size: 10px;
-    background-color: #ffffff; /* White background */
+    background-color:  rgb(247, 245, 245); 
     color: var(--header-teal); /* Teal text */
     border: 1.5px solid var(--header-teal); /* Teal outline */
     border-radius: 4px; /* Slightly rounded corners */
@@ -97,10 +97,16 @@ input[type="number"]:focus {
     transition: all 0.2s ease; /* Smooth hover effect */
 }
 
+#searchInput:focus {
+    border-color: #00695c;
+    box-shadow: 0 0 10px rgba(0, 105, 92, 0.2);
+}
+
 .btn-reset:hover {
     background-color: var(--header-teal);
     color: #ffffff;
 }
+
     /* THE SCROLLING TABLE SECTION - NO FLOATING HEADERS */
     .table-viewport {
         height: calc(100vh - 160px); /* Fill the rest of the screen */
@@ -119,15 +125,15 @@ thead th {
     position: sticky;
     top: 0; 
     z-index: 900;
-    background-color: #ffffff !important; /* Changes background to white */
+    background-color: rgb(247, 245, 245); /* Changes background to white */
     color: var(--header-teal) !important; /* Changes text to teal */
     text-transform: uppercase;
     font-weight: bold !important;
     padding: 5px 5px;
     line-height: 0.7 !important;
-    border-bottom: 1px solid var(--header-teal) !important; /* Thick teal underline */
-    border-left: 1px solid #eee; /* Subtle vertical separators */
-    border-right: 1px solid #eee;
+    border-bottom: 1.5px solid var(--header-teal) !important; /* Thick teal underline */
+    border-left: 1px solid #98d891; /* Subtle vertical separators */
+    border-right: 1px solid #98d891;
     font-size: 14px !important; 
     text-align: center !important;
 }
@@ -368,7 +374,7 @@ thead th.col-remarks {
                 <tr>
                     <th class="col-item">DRUG ITEM</th>
                     <th class="col-range">DIAGNOSIS & RANGE</th>
-                    <th class="col-calc header-calc">DOSE (MG)</th> 
+                    <th class="col-calc header-calc">DOSE</th> 
                     <th class="col-calc header-calc">VOL (ML)</th>
                     <th class="col-freq">FREQ</th>
                     <th class="col-remarks">REMARKS</th>
@@ -511,15 +517,15 @@ const viewport = document.querySelector('.table-viewport');
             remarks: "Each 5mL contains Magnesium Trisilicate BP 250mg, Light Magnesium Carbonate BP 250mg & Sodium Bicarbonate BP 250mg.",
             ref: "FUKKM, PI"
         },
-        {
+       {
             name: "PARACETAMOL SUPPOSITORY \n(125mg OR 250mg)",
-            range: "1 - 5 years (10-20kg): 125 - 250mg PRN\n6 - 12 years (20-40kg): 250 - 500mg PRN\n(max 75mg/kg/day up to 4g/day)",
+            range: "125 - 250mg PRN\n(max 75mg/kg/day up to 4g/day)",
             type: "text",
-            textDose: "SEE RANGE",
+            textDose: "125mg or 250mg",
             textVol: "-",
             freq: "PRN/TDS/ QID",
-            remarks: "<b>CANNOT be cut</b> before administration. <br> Ensure min gap 4 hours between doses, max 75mg/kg/day.",
-            ref: "FUKKM"
+            remarks: "<b>CANNOT be cut</b> before administration. <br> Ensure min gap 4 hours between doses, <b>do not exceed 5 doses in 24 hours</b>.",
+            ref: "Lexidrug"
         },
         {
             name: "CETIRIZINE 10mg TABLET",
@@ -530,9 +536,21 @@ const viewport = document.querySelector('.table-viewport');
         { minMo: 24, maxMo: 71,  dose: "5 mg", vol: "1/2 tab" },
         { minMo: 72, maxMo: 999, dose: "10 mg",  vol: "1 tab" }
     ],
-            freq: "OD",
+            freq: "OD/PRN",
             remarks: "",
             ref: "FUKKM, Lexidrug"
+        },
+         {
+            name: "HYOSCINE N-BUTYLBROMIDE 10mg TABLET",
+            range: "≥6 years : 10mg TDS",
+           type: "text",
+    minAgeMonths: 72, 
+    ageBrackets: [
+        { minMo: 72, maxMo: 999, dose: "10 mg",  vol: "1 tab" }
+    ],
+            freq: "TDS/PRN",
+            remarks: "",
+            ref: "BNF, FUKKM"
         },
          {
             name: "IBUPROFEN 200mg TABLET",
@@ -612,16 +630,21 @@ const viewport = document.querySelector('.table-viewport');
             remarks: "",
             ref: "NAG"
         },
-        {
+            {
             name: "AMOXICILLIN 250mg/5mL SUSPENSION\nAMOXICILLIN 500mg CAPSULE",
-            disease: "ACUTE OTITIS MEDIA",
+            disease: "ACUTE OTITIS MEDIA (AOM)",
             range: "80 - 90mg/kg/day\n(max 3g/day)",
-            recDose: 40, 
+            recDose: 45, 
             maxDose: 1000, 
             conc: 50,
             type: "calc",
-            freq: "BD <br> < 2yrs: 7-10 days; <br> ≥2 yrs: 5-7 days",
-            remarks: "Total daily dose can also be given in 3 divided doses",
+            freq: (totalMonths) => {
+    if (!totalMonths) return "BD"; 
+    return totalMonths < 24 
+      ? "BD <br> x 7-10 days" 
+      : "BD <br> x 5-7 days";
+  },
+            remarks: "<2 years: 7 - 10 days; ≥2 years: 5 - 7 days. <br> Total daily dose can also be given in 3 divided doses",
             ref: "NAG"
         },
         {
@@ -842,15 +865,15 @@ ageBrackets: [
         },
         { section: "4. ANTIFUNGAL" },
         {
-            name: "GRISEOFLUVIN 125mg TABLET\n(= MICROSIZE 250mg)",
-            disease: "TINEA CAPITIS",
-            range: "MICROSIZE: 10 - 20 mg/kg/day (max 750mg/day)",
+            name: "GRISEOFULVIN 125mg TABLET\n(MICROSIZE)",
+            disease: "TINEA INFECTION",
+            range: "MICROSIZE: 10 - 20 mg/kg/day <br> (max 1000mg/day)",
             recDose: 10,
-            maxDose: 750, // Per day
+            maxDose: 1000, // Per day
             type: "calc_tab",
-            freq: "OD/BD <br> x 6 weeks",
-            remarks: "Suggest to round up to the nearest 250mg dose.",
-            ref: "NAG"
+            freq: "OD/BD",
+            remarks: "Tinea capitis: 6 weeks; Tinea corporis: 2 - 4 weeks; Tinea pedis 4 - 8 weeks. <br> Should be taken with milk or fatty food.",
+            ref: "Lexidrug, NAG"
         },
           {
            name: "NYSTATIN 100,000units/mL ORAL SUSPENSION",
@@ -954,6 +977,13 @@ ageBrackets: [
             ref: "CPG TB"
         },
     ];
+
+function getSmartText(field, totalMonths) {
+    if (typeof field === 'function') {
+        return field(totalMonths);
+    }
+    return (field || "").replace(/\n/g, '<br>');
+}
 
 function renderTable() {
     if (ageMonthsInput.value !== "") {
@@ -1086,10 +1116,18 @@ if (row.conc) volDisplay = (calc / row.conc).toFixed(1) + " mL";
                 }
             } // End of Calculation Logic
 
-            // 3. Fallback for static text (If no calculation was possible)
-         if (doseDisplay === "-" && volDisplay === "-") {
-    doseDisplay = row.textDose || "SEE RANGE";
-    volDisplay = row.textVol || "-";
+           // 3. Smart Fallback for Recommended Dose or Static Text
+if (doseDisplay === "-" && volDisplay === "-") {
+    // If weight is empty but a recommended dose exists (e.g., 15 mg/kg)
+    if (!weightInput.value && row.recDose) {
+        var unit = (row.type === 'calc_ml') ? 'mL/kg' : 'mg/kg';
+        doseDisplay = `<span style="color: #546e7a; font-weight: normal;">${row.recDose} ${unit}</span>`;
+        volDisplay = "-";
+    } else {
+        // Standard fallback for text-only items (like Bromhexine)
+        doseDisplay = row.textDose || "SEE RANGE";
+        volDisplay = row.textVol || "-";
+    }
 }
 
             const maxClass = isMaxHit ? 'max-hit' : '';
@@ -1099,7 +1137,7 @@ if (row.conc) volDisplay = (calc / row.conc).toFixed(1) + " mL";
                 <td class="col-range">${(row.disease ? `<span class="disease-tag">${row.disease}</span>` : '') + row.range.replace(/\n/g, '<br>')}</td>
                 <td class="col-calc ${maxClass}">${doseDisplay}</td>
                 <td class="col-calc ${maxClass}">${volDisplay}</td>
-                <td class="col-freq">${row.freq}</td>
+               <td class="col-freq">${getSmartText(row.freq, totalMonths)}</td>
                 <td class="col-remarks">${row.remarks.replace(/\n/g, '<br>')}</td>
                 <td class="col-ref">${row.ref}</td>
             `;
